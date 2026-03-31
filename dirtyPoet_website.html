@@ -47,7 +47,7 @@ body{
 
 /* ── GRAIN ── */
 body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:998;opacity:.04;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:998;opacity:.055;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -92,12 +92,19 @@ nav{
   min-height:100vh;display:flex;flex-direction:column;
   justify-content:flex-end;padding:0 48px 80px;
   position:relative;overflow:hidden;
+  background:var(--paper);
 }
 .hero-bg{
   position:absolute;inset:0;
   background:
     radial-gradient(ellipse 60% 80% at 75% 30%, rgba(68,83,64,.12) 0%, transparent 70%),
     radial-gradient(ellipse 40% 60% at 20% 70%, rgba(155,106,74,.09) 0%, transparent 60%);
+}
+/* mouse-tracking ambient orbs */
+#hero-light{
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  will-change:background;
+  transition:background .05s linear;
 }
 .hero-season{
   position:absolute;top:50%;right:48px;
@@ -164,7 +171,7 @@ nav{
 
 /* ── MANIFESTO ── */
 #manifesto{
-  background:var(--ink);
+  background:radial-gradient(ellipse 80% 60% at 20% 30%, #5C3520 0%, #3D2416 60%, #2A180E 100%);
   padding:140px 48px;
   position:relative;overflow:hidden;
 }
@@ -244,7 +251,7 @@ nav{
 
 /* ── IBEX / IP ── */
 #ibex{
-  background:var(--green-deep);
+  background:radial-gradient(ellipse 70% 80% at 80% 20%, #2D4A2A 0%, #213722 50%, #141F13 100%);
   padding:120px 48px;
   display:grid;grid-template-columns:1fr 1fr;
   gap:80px;align-items:center;
@@ -353,7 +360,7 @@ nav{
 
 /* ── PRESALE / FORM ── */
 #presale{
-  background:var(--ink);
+  background:radial-gradient(ellipse 60% 70% at 30% 60%, #2A2A1E 0%, #1A1A14 60%, #0F0F0A 100%);
   padding:120px 48px;
   position:relative;overflow:hidden;
 }
@@ -483,8 +490,9 @@ nav{
 
 /* ── FOOTER ── */
 footer{
-  background:var(--green-deep);
+  background:radial-gradient(ellipse 50% 40% at 70% 80%, #1A2E1A 0%, #111A12 70%, #0A110A 100%);
   padding:80px 48px 48px;
+  position:relative;overflow:hidden;
 }
 .footer-top{
   display:flex;justify-content:space-between;align-items:flex-start;
@@ -521,7 +529,7 @@ footer{
 
 /* ── SEASON STRIP ── */
 .season-strip{
-  background:var(--rust);padding:12px 48px;
+  background:linear-gradient(90deg, #7A4A2A 0%, #9B6A4A 40%, #6B7A45 100%);padding:12px 48px;
   display:flex;gap:48px;overflow:hidden;white-space:nowrap;
 }
 .season-item{
@@ -531,7 +539,12 @@ footer{
 .season-sep{color:rgba(232,228,220,.3);margin:0 4px;}
 
 /* ── COMMUNITY 脏诗社 ── */
-#community{padding:120px 48px;background:var(--paper)}
+#community{padding:120px 48px;background:var(--blue-deep);position:relative;overflow:hidden}
+#community .section-label{color:var(--rust)}
+#community .section-title{color:var(--paper);border-bottom-color:rgba(232,228,220,.12)}
+#community .community-tabs{border-bottom-color:rgba(232,228,220,.1)}
+#community .community-tab{color:rgba(232,228,220,.45)}
+#community .community-tab.active{color:var(--paper);border-bottom-color:var(--rust)}
 #community .section-header{max-width:1100px;margin:0 auto 64px}
 .community-inner{max-width:1100px;margin:0 auto}
 
@@ -624,6 +637,12 @@ footer{
   .community-submit{flex-direction:column;gap:24px;padding:32px}
 }
 
+/* ── DARK SECTION GRAIN (additional tactile layer) ── */
+#manifesto::after,#ibex::after,#presale::after,#community::after,footer::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:3;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 /* ── SCROLL REVEAL ── */
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
 .reveal.visible{opacity:1;transform:none}
@@ -675,6 +694,7 @@ footer{
 <!-- HERO -->
 <section id="hero">
   <div class="hero-bg"></div>
+  <div id="hero-light"></div>
   <div class="hero-season">Season 01 · 在野</div>
   <div class="hero-counter">001 / 100</div>
 
@@ -1111,6 +1131,53 @@ if(ibexImg) {
     if(fb) fb.style.display = 'flex';
   };
 }
+
+// ── HERO MOUSE-TRACKING AMBIENT LIGHT ──
+(function(){
+  const hero = document.getElementById('hero');
+  const light = document.getElementById('hero-light');
+  if(!hero || !light) return;
+
+  let targetX = window.innerWidth / 2;
+  let targetY = window.innerHeight / 2;
+  let currentX = targetX;
+  let currentY = targetY;
+  let rafId = null;
+  let heroActive = false;
+
+  // observe whether hero is in view
+  const heroObs = new IntersectionObserver(entries => {
+    heroActive = entries[0].isIntersecting;
+    if(heroActive && !rafId) rafId = requestAnimationFrame(animate);
+  }, { threshold: 0 });
+  heroObs.observe(hero);
+
+  document.addEventListener('mousemove', e => {
+    targetX = e.clientX;
+    targetY = e.clientY;
+  });
+
+  function animate() {
+    rafId = null;
+    if(!heroActive) return;
+
+    // lerp — slow dreamy follow
+    currentX += (targetX - currentX) * 0.06;
+    currentY += (targetY - currentY) * 0.06;
+
+    // second orb offset ~200px
+    const ox2 = currentX - 180;
+    const oy2 = currentY + 120;
+
+    light.style.background =
+      `radial-gradient(600px circle at ${currentX}px ${currentY}px, rgba(163,81,57,0.35) 0%, transparent 70%),` +
+      `radial-gradient(600px circle at ${ox2}px ${oy2}px, rgba(68,83,64,0.25) 0%, transparent 70%)`;
+
+    rafId = requestAnimationFrame(animate);
+  }
+
+  rafId = requestAnimationFrame(animate);
+})();
 </script>
 </body>
 </html>
